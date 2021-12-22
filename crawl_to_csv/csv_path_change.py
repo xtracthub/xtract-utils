@@ -29,7 +29,7 @@ def create_new_csv(filename, old_path, new_path):
                 writer.writerow(line)
             if num_lines % 10000 == 0:
                 print(f"Lines completed: {num_lines}")
-                
+
     return "Done"
 
 
