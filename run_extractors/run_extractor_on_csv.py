@@ -81,9 +81,9 @@ def get_event_template(files, mode, dir_name, extractor ):
 
 
 class ExtractorRunner:
-    def __init__(self, csv_path, mode, extractor, mdata_dir):
+    def __init__(self, csv_path, mode, extractor, mdata_dir, num_threads):
         
-        self.num_threads = 1
+        self.num_threads = num_threads
         self.proc_queue = Queue()
         self.mdata_dir = mdata_dir
         self.mode=mode
@@ -105,6 +105,7 @@ class ExtractorRunner:
 
         for i in range(0, self.num_threads):
             thr = Thread(target=self.run_extractor_on_everything, args=(i,))
+            #thr.daemon = True
             thr.start()
 
     
@@ -112,7 +113,8 @@ class ExtractorRunner:
 
     def run_extractor_on_everything(self, thread_id):
         print(f"Started extractor thread: {thread_id}")
-
+        
+        # files_processed = 0
         while True: 
             if self.proc_queue.empty():
                 print(f"Queue is empty in thread {thread_id}... BREAKING!") 
@@ -136,18 +138,27 @@ class ExtractorRunner:
 
             path_to_check = os.path.join(self.mdata_dir, fhash)
             if result == "SUCCESS":
-                with open(path_to_check, 'rw') as g: 
+                with open(path_to_check, 'r') as g: 
                     x = json.load(g)
                     x['xtract_time'] = t1-t0
-                    json.dumps(x, g)
+                with open(path_to_check, 'w') as h:
+                    json.dump(x, h)
+            elif result == "FAIL":
+                with open(path_to_check, 'w') as j: 
+                    fail_dict = dict()
+                    fail_dict['files'] = [{'path': fpath, 
+                                      'size': fsize}]
+                    fail_dict['xtract_time'] = t1 - t0
+                    fail_dict['metadata'] = {'tabular': None}
+
+                    json.dump(fail_dict, f)
+                # break
+            # print(f"Files processed: {files_processed}")
+            time.sleep(0.1)
 
             # except Exception as e: 
             #    auto_write = True
             #    print('oy')
-
-
-
-
 
 
 
@@ -157,6 +168,7 @@ if __name__ == "__main__":
     parser.add_argument('-m', '--mode')
     parser.add_argument('-d', '--dir')
     parser.add_argument('-x', '--extractor')
+    parser.add_argument('-n', '--num_threads')
 
     args = parser.parse_args()
-    er = ExtractorRunner(args.csv, args.mode, args.extractor, args.dir)
+    er = ExtractorRunner(args.csv, args.mode, args.extractor, args.dir, int(args.num_threads))
