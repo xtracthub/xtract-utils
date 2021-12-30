@@ -151,10 +151,10 @@ class ExtractorRunner:
                     fail_dict['xtract_time'] = t1 - t0
                     fail_dict['metadata'] = {'tabular': None}
 
-                    json.dump(fail_dict, f)
+                    json.dump(fail_dict, j)
                 # break
             # print(f"Files processed: {files_processed}")
-            time.sleep(0.1)
+            time.sleep(0.5)
 
             # except Exception as e: 
             #    auto_write = True
