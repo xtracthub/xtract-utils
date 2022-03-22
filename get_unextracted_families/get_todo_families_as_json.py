@@ -29,4 +29,4 @@ if __name__=="__main__":
     parser.add_argument('--dir', '-d')
     args = parser.parse_args()
 
-    find_missing_families(args.top_num, args.dir)
+    find_missing_families(int(args.top_num), args.dir)
